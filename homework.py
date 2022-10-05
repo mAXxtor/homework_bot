@@ -16,10 +16,10 @@ PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-RETRY_TIME = 600
+RETRY_TIME = 60
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-START_TIME = 3*30*24*60*60
+START_TIME = 3 * 30 * 24 * 60 * 60
 
 
 HOMEWORK_STATUSES = {
@@ -90,7 +90,7 @@ def check_response(response):
 def parse_status(homework):
     """Функция проверяет статус домашней работы."""
     try:
-        homework_name = homework.get('homework_name')
+        homework_name = str(homework.get('homework_name'))
     except KeyError as error:
         logger.error(f'Ошибка доступа по ключу homework_name: {error}')
     try:
@@ -103,7 +103,8 @@ def parse_status(homework):
         logger.error(message)
         raise exceptions.EmptyHWNameOrStatus(message)
     logger.info('Проверка статуса домашней работы прошла успешно')
-    return f'Изменился статус проверки домашней работы "{homework_name}". {verdict}'
+    return (f'Изменился статус проверки домашней работы "{homework_name}".'
+            f' {verdict}')
 
 
 def check_tokens():
