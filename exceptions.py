@@ -10,8 +10,20 @@ class APIResponseStatusException(Exception):
     pass
 
 
-class CheckResponseException(Exception):
-    """Ошибки неверного формата ответа API."""
+class DictResponseException(Exception):
+    """Ошибки в ответе API не словарь."""
+
+    pass
+
+
+class EmptyResponseAPIException(Exception):
+    """Ошибки пустого ответа API."""
+
+    pass
+
+
+class HWResponseAPIException(Exception):
+    """Ошибки не верного представления домашних работ в ответе API."""
 
     pass
 
