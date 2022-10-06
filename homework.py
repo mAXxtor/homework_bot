@@ -78,7 +78,7 @@ def get_api_answer(current_timestamp):
             'Ошибка при запросе по API к endpoint:{error} '
             'c параметрами url:{url}, headers:{headers}, '
             'params:{params}'.format(error=error, **data)
-            )
+        )
 
 
 def check_response(response):
@@ -128,7 +128,8 @@ def check_tokens():
     tokens_bool = True
     for name, token in names_tokens:
         if not token:
-            logger.critical('Переменная окружения {} недоступна'.format(name))
+            logger.critical(
+                'Переменная окружения {} недоступна'.format(name))
             tokens_bool = False
     return tokens_bool
 
