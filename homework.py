@@ -37,7 +37,7 @@ formatter = logging.Formatter(
 )
 console_handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(console_handler)
-file_handler = logging.FileHandler('homework.log')
+file_handler = logging.FileHandler('./homework.log', encoding='utf-8')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
@@ -45,23 +45,22 @@ logger.addHandler(file_handler)
 def send_message(bot, message):
     """Функция отправляет сообщение в чат."""
     try:
+        logger.info('Попытка отправки сообщения {} в чат'.format(message))
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-        logger.info('Попытка отправки сообщения в чат')
     except TelegramError as error:
         logger.error(f'Ошибка при отправке сообщения в чат. {error}')
         return False
     else:
-        logger.info('Сообщение в чат отправлено')
+        logger.info('Сообщение {} отправлено в чат'.format(message))
         return True
 
 
 def get_api_answer(current_timestamp):
     """Функция совершает запрос по API к endpoint."""
-    timestamp = current_timestamp
     data = {
         'url': ENDPOINT,
         'headers': HEADERS,
-        'params': {'from_date': timestamp}
+        'params': {'from_date': current_timestamp}
     }
     logger.info('Выполняем запрос к API c url:{url}, '
                 'headers:{headers}, params:{params}'.format(**data))
@@ -75,11 +74,11 @@ def get_api_answer(current_timestamp):
         logger.info('Запрос по API прошел успешно')
         return response.json()
     except Exception as error:
-        message = ('Ошибка при запросе по API к endpoint:{error} '
-                   'c параметрами url:{url}, headers:{headers}, '
-                   'params:{params}'.format(error=error, **data))
-        logger.error(message)
-        raise ConnectionError(message)
+        raise ConnectionError(
+            'Ошибка при запросе по API к endpoint:{error} '
+            'c параметрами url:{url}, headers:{headers}, '
+            'params:{params}'.format(error=error, **data)
+            )
 
 
 def check_response(response):
@@ -89,15 +88,13 @@ def check_response(response):
         message = 'В ответе API не словарь'
         logger.error(message)
         raise TypeError(message)
-    if response['homeworks'] is None:
-        message = 'В ответе API нет домашних работ'
-        logger.error(message)
-        raise exceptions.EmptyResponseAPIException(message)
+    if 'homeworks' not in response:
+        raise exceptions.EmptyResponseAPIException(
+            'В ответе API нет домашних работ')
     homeworks_list = response.get('homeworks')
     if not isinstance(homeworks_list, list):
-        message = 'В ответе API домашние работы представлены не списком'
-        logger.error(message)
-        raise exceptions.HWResponseAPIException(message)
+        raise ValueError(
+            'В ответе API домашние работы представлены не списком')
     logger.info('Список домашних работ получен успешно')
     return homeworks_list
 
@@ -111,10 +108,8 @@ def parse_status(homework):
         raise KeyError(message)
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
-        message = 'Неизвестный статус {} домашней работы'.format(
-            homework_status)
-        logger.error(message)
-        raise ValueError(message)
+        raise ValueError('Неизвестный статус {} домашней работы'.format(
+            homework_status))
     logger.info('Проверка статуса домашней работы прошла успешно')
     return (
         'Изменился статус проверки работы "{homework_name}". '
@@ -132,7 +127,7 @@ def check_tokens():
     )
     tokens_bool = True
     for name, token in names_tokens:
-        if token is None:
+        if not token:
             logger.critical('Переменная окружения {} недоступна'.format(name))
             tokens_bool = False
     return tokens_bool
@@ -158,7 +153,7 @@ def main():
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-            if len(homeworks) != 0:
+            if homeworks:
                 homework_status = homeworks[0]
                 message = parse_status(homework_status)
                 current_report['name_messages'] = message
@@ -168,12 +163,13 @@ def main():
             if current_report != prev_report:
                 if send_message(bot, current_report['name_messages']):
                     prev_report = current_report.copy()
-                    current_timestamp = response.get('current_date')
+                    if response.get('current_date'):
+                        current_timestamp = response.get('current_date')
             else:
                 logger.debug('Статус проверки домашней работы не изменился')
 
         except exceptions.EmptyResponseAPIException as error:
-            logger.error(error)
+            logger.error(error, exc_info=True)
 
         except Exception as error:
             current_report['name_messages'] = (
@@ -181,6 +177,7 @@ def main():
             if current_report != prev_report:
                 send_message(bot, current_report['name_messages'])
                 prev_report = current_report.copy()
+            logger.error(error, exc_info=True)
 
         finally:
             time.sleep(RETRY_TIME)

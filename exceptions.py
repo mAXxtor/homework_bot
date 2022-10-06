@@ -10,12 +10,6 @@ class EmptyResponseAPIException(Exception):
     pass
 
 
-class HWResponseAPIException(Exception):
-    """Ошибки не верного представления домашних работ в ответе API."""
-
-    pass
-
-
 class MissingRequiredTokenException(Exception):
     """Ошибки отсутствия необходимых переменных окружения."""
 
