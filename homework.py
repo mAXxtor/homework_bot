@@ -30,9 +30,13 @@ HOMEWORK_VERDICTS = {
 }
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] '
+                '%(name)s %(funcName)s:%(lineno)d %(message)s')
 console_handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(console_handler)
-file_handler = logging.FileHandler(filename='./log/homework.log')
+file_handler = logging.FileHandler('homework.log')
+file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
@@ -134,11 +138,6 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    logging.basicConfig(
-        format=('%(asctime)s [%(levelname)s] '
-                '%(name)s %(funcName)s:%(lineno)d %(message)s'),
-        level=logging.INFO,
-    )
     logger.info('Бот в работе')
     if not check_tokens():
         raise exceptions.MissingRequiredTokenException(
