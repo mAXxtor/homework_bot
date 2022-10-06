@@ -31,8 +31,10 @@ HOMEWORK_VERDICTS = {
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s [%(levelname)s] '
-                '%(name)s %(funcName)s:%(lineno)d %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s [%(levelname)s] %(name)s '
+    '%(funcName)s:%(lineno)d %(message)s'
+)
 console_handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(console_handler)
 file_handler = logging.FileHandler('homework.log')
