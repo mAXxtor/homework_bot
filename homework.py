@@ -164,8 +164,8 @@ def main():
             if current_report != prev_report:
                 if send_message(bot, current_report['name_messages']):
                     prev_report = current_report.copy()
-                    if response.get('current_date'):
-                        current_timestamp = response.get('current_date')
+                if response.get('current_date'):
+                    current_timestamp = response.get('current_date')
             else:
                 logger.debug('Статус проверки домашней работы не изменился')
 
