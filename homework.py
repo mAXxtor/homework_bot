@@ -175,8 +175,8 @@ def main():
             logger.error(error)
 
         except Exception as error:
-            current_report['name_messages'] = 'Сбой в работе программы: {}'.format(
-                error)
+            current_report['name_messages'] = (
+                'Сбой в работе программы: {}'.format(error))
             if current_report != prev_report:
                 send_message(bot, current_report['name_messages'])
                 prev_report = current_report.copy()
