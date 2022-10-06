@@ -82,7 +82,7 @@ def check_response(response):
     if not isinstance(response, dict):
         message = 'В ответе API не словарь'
         logger.error(message)
-        raise exceptions.DictResponseException(message)
+        raise TypeError(message)
     if response['homeworks'] is None:
         message = 'В ответе API нет домашних работ'
         logger.error(message)
@@ -99,11 +99,16 @@ def check_response(response):
 def parse_status(homework):
     """Функция проверяет статус домашней работы."""
     homework_name = homework.get('homework_name')
+    if homework_name is None:
+        message = 'Отсутсвует ключ homework_name в ответе API'
+        logger.error(message)
+        raise KeyError(message)
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
-        message = 'Неизвестный статус домашней работы'
+        message = 'Неизвестный статус {} домашней работы'.format(
+            homework_status)
         logger.error(message)
-        raise exceptions.UnknownHWStatusException(message)
+        raise ValueError(message)
     logger.info('Проверка статуса домашней работы прошла успешно')
     return (
         'Изменился статус проверки работы "{homework_name}". '
@@ -157,7 +162,8 @@ def main():
                 message = parse_status(homework_status)
                 current_report['name_messages'] = message
             else:
-                current_report['name_messages'] = 'Статус проверки домашней работы не изменился'
+                current_report['name_messages'] = (
+                    'Статус проверки домашней работы не изменился')
             if current_report != prev_report:
                 if send_message(bot, current_report['name_messages']):
                     prev_report = current_report.copy()
@@ -166,10 +172,11 @@ def main():
                 logger.debug('Статус проверки домашней работы не изменился')
 
         except exceptions.EmptyResponseAPIException as error:
-                logger.error(error)
+            logger.error(error)
 
         except Exception as error:
-            current_report['name_messages'] = 'Сбой в работе программы: {}'.format(error)
+            current_report['name_messages'] = 'Сбой в работе программы: {}'.format(
+                error)
             if current_report != prev_report:
                 send_message(bot, current_report['name_messages'])
                 prev_report = current_report.copy()
