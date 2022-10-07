@@ -37,7 +37,9 @@ formatter = logging.Formatter(
 )
 console_handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(console_handler)
-file_handler = logging.FileHandler('./homework.log', encoding='utf-8')
+file_handler = logging.FileHandler(
+    f'{os.path.dirname(os.path.abspath(__file__))}/homework.log',
+    encoding='utf-8')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
